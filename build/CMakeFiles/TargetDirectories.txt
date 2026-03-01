@@ -1,0 +1,4 @@
+/home/taqiyya/cuda/flash_attention/build/CMakeFiles/flash_attention_naive_lib.dir
+/home/taqiyya/cuda/flash_attention/build/CMakeFiles/flash_attention_demo.dir
+/home/taqiyya/cuda/flash_attention/build/CMakeFiles/edit_cache.dir
+/home/taqiyya/cuda/flash_attention/build/CMakeFiles/rebuild_cache.dir

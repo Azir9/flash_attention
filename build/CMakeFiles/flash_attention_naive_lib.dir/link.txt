@@ -1,0 +1,2 @@
+/usr/bin/ar qc libflash_attention_naive_lib.a CMakeFiles/flash_attention_naive_lib.dir/src/flash_attention_naive.cu.o
+/usr/bin/ranlib libflash_attention_naive_lib.a
