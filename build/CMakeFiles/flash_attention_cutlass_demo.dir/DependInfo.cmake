@@ -8,7 +8,7 @@ set(CMAKE_DEPENDS_LANGUAGES
 
 # The set of dependency files which are needed:
 set(CMAKE_DEPENDS_DEPENDENCY_FILES
-  "/home/taqiyya/cuda/flash_attention/src/main.cu" "CMakeFiles/flash_attention_demo.dir/src/main.cu.o" "gcc" "CMakeFiles/flash_attention_demo.dir/src/main.cu.o.d"
+  "/home/taqiyya/cuda/flash_attention/src/main.cu" "CMakeFiles/flash_attention_cutlass_demo.dir/src/main.cu.o" "gcc" "CMakeFiles/flash_attention_cutlass_demo.dir/src/main.cu.o.d"
   )
 
 # Targets to which this target links which contain Fortran sources.

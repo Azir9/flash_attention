@@ -142,7 +142,7 @@ CMAKE_PROJECT_DESCRIPTION:STATIC=
 CMAKE_PROJECT_HOMEPAGE_URL:STATIC=
 
 //Value Computed by CMake
-CMAKE_PROJECT_NAME:STATIC=flash_attention_naive
+CMAKE_PROJECT_NAME:STATIC=flash_attention_cutlass_demo
 
 //Path to a program.
 CMAKE_RANLIB:FILEPATH=/usr/bin/ranlib
@@ -206,14 +206,17 @@ CMAKE_STRIP:FILEPATH=/usr/bin/strip
 // Studio IDE projects all commands are done without /nologo.
 CMAKE_VERBOSE_MAKEFILE:BOOL=FALSE
 
-//Value Computed by CMake
-flash_attention_naive_BINARY_DIR:STATIC=/home/taqiyya/cuda/flash_attention/build
+//Path to a file.
+CUTLASS_INCLUDE_DIR:PATH=/home/taqiyya/koopman_mpc/test_code/tvm/3rdparty/cutlass/include
 
 //Value Computed by CMake
-flash_attention_naive_IS_TOP_LEVEL:STATIC=ON
+flash_attention_cutlass_demo_BINARY_DIR:STATIC=/home/taqiyya/cuda/flash_attention/build
 
 //Value Computed by CMake
-flash_attention_naive_SOURCE_DIR:STATIC=/home/taqiyya/cuda/flash_attention
+flash_attention_cutlass_demo_IS_TOP_LEVEL:STATIC=ON
+
+//Value Computed by CMake
+flash_attention_cutlass_demo_SOURCE_DIR:STATIC=/home/taqiyya/cuda/flash_attention
 
 
 ########################

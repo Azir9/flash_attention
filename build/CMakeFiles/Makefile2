@@ -63,8 +63,7 @@ CMAKE_BINARY_DIR = /home/taqiyya/cuda/flash_attention/build
 # Directory level rules for the build root directory
 
 # The main recursive "all" target.
-all: CMakeFiles/flash_attention_naive_lib.dir/all
-all: CMakeFiles/flash_attention_demo.dir/all
+all: CMakeFiles/flash_attention_cutlass_demo.dir/all
 .PHONY : all
 
 # The main recursive "preinstall" target.
@@ -72,61 +71,34 @@ preinstall:
 .PHONY : preinstall
 
 # The main recursive "clean" target.
-clean: CMakeFiles/flash_attention_naive_lib.dir/clean
-clean: CMakeFiles/flash_attention_demo.dir/clean
+clean: CMakeFiles/flash_attention_cutlass_demo.dir/clean
 .PHONY : clean
 
 #=============================================================================
-# Target rules for target CMakeFiles/flash_attention_naive_lib.dir
+# Target rules for target CMakeFiles/flash_attention_cutlass_demo.dir
 
 # All Build rule for target.
-CMakeFiles/flash_attention_naive_lib.dir/all:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/flash_attention_naive_lib.dir/build.make CMakeFiles/flash_attention_naive_lib.dir/depend
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/flash_attention_naive_lib.dir/build.make CMakeFiles/flash_attention_naive_lib.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/taqiyya/cuda/flash_attention/build/CMakeFiles --progress-num=4,5 "Built target flash_attention_naive_lib"
-.PHONY : CMakeFiles/flash_attention_naive_lib.dir/all
+CMakeFiles/flash_attention_cutlass_demo.dir/all:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/flash_attention_cutlass_demo.dir/build.make CMakeFiles/flash_attention_cutlass_demo.dir/depend
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/flash_attention_cutlass_demo.dir/build.make CMakeFiles/flash_attention_cutlass_demo.dir/build
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/taqiyya/cuda/flash_attention/build/CMakeFiles --progress-num=1,2,3 "Built target flash_attention_cutlass_demo"
+.PHONY : CMakeFiles/flash_attention_cutlass_demo.dir/all
 
 # Build rule for subdir invocation for target.
-CMakeFiles/flash_attention_naive_lib.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/taqiyya/cuda/flash_attention/build/CMakeFiles 2
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CMakeFiles/flash_attention_naive_lib.dir/all
+CMakeFiles/flash_attention_cutlass_demo.dir/rule: cmake_check_build_system
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/taqiyya/cuda/flash_attention/build/CMakeFiles 3
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CMakeFiles/flash_attention_cutlass_demo.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/taqiyya/cuda/flash_attention/build/CMakeFiles 0
-.PHONY : CMakeFiles/flash_attention_naive_lib.dir/rule
+.PHONY : CMakeFiles/flash_attention_cutlass_demo.dir/rule
 
 # Convenience name for target.
-flash_attention_naive_lib: CMakeFiles/flash_attention_naive_lib.dir/rule
-.PHONY : flash_attention_naive_lib
+flash_attention_cutlass_demo: CMakeFiles/flash_attention_cutlass_demo.dir/rule
+.PHONY : flash_attention_cutlass_demo
 
 # clean rule for target.
-CMakeFiles/flash_attention_naive_lib.dir/clean:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/flash_attention_naive_lib.dir/build.make CMakeFiles/flash_attention_naive_lib.dir/clean
-.PHONY : CMakeFiles/flash_attention_naive_lib.dir/clean
-
-#=============================================================================
-# Target rules for target CMakeFiles/flash_attention_demo.dir
-
-# All Build rule for target.
-CMakeFiles/flash_attention_demo.dir/all: CMakeFiles/flash_attention_naive_lib.dir/all
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/flash_attention_demo.dir/build.make CMakeFiles/flash_attention_demo.dir/depend
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/flash_attention_demo.dir/build.make CMakeFiles/flash_attention_demo.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/taqiyya/cuda/flash_attention/build/CMakeFiles --progress-num=1,2,3 "Built target flash_attention_demo"
-.PHONY : CMakeFiles/flash_attention_demo.dir/all
-
-# Build rule for subdir invocation for target.
-CMakeFiles/flash_attention_demo.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/taqiyya/cuda/flash_attention/build/CMakeFiles 5
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CMakeFiles/flash_attention_demo.dir/all
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/taqiyya/cuda/flash_attention/build/CMakeFiles 0
-.PHONY : CMakeFiles/flash_attention_demo.dir/rule
-
-# Convenience name for target.
-flash_attention_demo: CMakeFiles/flash_attention_demo.dir/rule
-.PHONY : flash_attention_demo
-
-# clean rule for target.
-CMakeFiles/flash_attention_demo.dir/clean:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/flash_attention_demo.dir/build.make CMakeFiles/flash_attention_demo.dir/clean
-.PHONY : CMakeFiles/flash_attention_demo.dir/clean
+CMakeFiles/flash_attention_cutlass_demo.dir/clean:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/flash_attention_cutlass_demo.dir/build.make CMakeFiles/flash_attention_cutlass_demo.dir/clean
+.PHONY : CMakeFiles/flash_attention_cutlass_demo.dir/clean
 
 #=============================================================================
 # Special targets to cleanup operation of make.

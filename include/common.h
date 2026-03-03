@@ -1,24 +1,38 @@
 #pragma once
-//定义常量
 
-//编译：循环展开
-#define FA_UNROLL _Pragma("unroll")
-// 函数修饰，内联，放在device上面
-#define FA_DEVICE __forceinline__ __device__
-// 常量表达式 用于修饰函数（局限于device端）
-#define FA_DEVICE_CONSTEXPR __forceinline__ __device__ constexpr
-// gpu中的一个warp大小
-
-//定义常量
-
-
-// 基础常量（naive 实现里 Br/Bc 暂时没用，预留给后续 block 版本）
-constexpr int Br = 32;       // Block Row (Q 的分块大小)
-constexpr int Bc = 32;       // Block Col (K, V 的分块大小)
-constexpr int d  = 64;       // Head Dimension
+// --------------------------------------------
+// 通用常量
+// --------------------------------------------
 constexpr int WARP_SIZE = 32;
-constexpr int SHFL_ENTIRE_WARP_MASK=0xffffffff; // warp  规约的掩码
+constexpr int ROWS_PER_FRAGMENT = 8;
+constexpr int COLS_PER_FRAGMENT = 8;
+constexpr int GSM_LDST_ROWS_PER_ITER = 4;
+constexpr int BYTES_PER_VEC4_ACCESS = 16;  // 16B 向量访问（128bit）
+constexpr int ELEMS_PER_VEC4_ACCESS = 8;   // fp16/bf16 下 16B = 8 个元素
 
-#ifndef FLT_MAX
-#define FLT_MAX 3.402823466e+38F
-#endif
+// --------------------------------------------
+// 搬运配置结构（作为 NTTP 使用）
+// --------------------------------------------
+struct TileLayout {
+    int row_fragments;
+    int col_fragments;
+};
+
+struct TensorLDSTConfig {
+    // GMEM <-> SMEM 的分块形状
+    TileLayout GSM;
+    // SMEM <-> RF 的分块形状
+    TileLayout RF;
+
+    // 是否使用转置读（通常用于 K/V）
+    bool transposed;
+    // 一个 block 在序列维度覆盖的行数
+    int block_size;
+    // smem 中每行元素数（列跨度）
+    int smem_cols;
+
+    // 每个 warp 独立负责的行数（通常 = GSM.row_fragments * 8）
+    int warp_ldst_rows;
+    // 是否让该 warp 覆盖整个 block（K/V 常为 true）
+    bool compute_over_entire_block;
+};

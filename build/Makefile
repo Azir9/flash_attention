@@ -117,61 +117,24 @@ depend:
 .PHONY : depend
 
 #=============================================================================
-# Target rules for targets named flash_attention_naive_lib
+# Target rules for targets named flash_attention_cutlass_demo
 
 # Build rule for target.
-flash_attention_naive_lib: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 flash_attention_naive_lib
-.PHONY : flash_attention_naive_lib
+flash_attention_cutlass_demo: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 flash_attention_cutlass_demo
+.PHONY : flash_attention_cutlass_demo
 
 # fast build rule for target.
-flash_attention_naive_lib/fast:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/flash_attention_naive_lib.dir/build.make CMakeFiles/flash_attention_naive_lib.dir/build
-.PHONY : flash_attention_naive_lib/fast
-
-#=============================================================================
-# Target rules for targets named flash_attention_demo
-
-# Build rule for target.
-flash_attention_demo: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 flash_attention_demo
-.PHONY : flash_attention_demo
-
-# fast build rule for target.
-flash_attention_demo/fast:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/flash_attention_demo.dir/build.make CMakeFiles/flash_attention_demo.dir/build
-.PHONY : flash_attention_demo/fast
-
-src/flash_attention_naive.o: src/flash_attention_naive.cu.o
-.PHONY : src/flash_attention_naive.o
-
-# target to build an object file
-src/flash_attention_naive.cu.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/flash_attention_naive_lib.dir/build.make CMakeFiles/flash_attention_naive_lib.dir/src/flash_attention_naive.cu.o
-.PHONY : src/flash_attention_naive.cu.o
-
-src/flash_attention_naive.i: src/flash_attention_naive.cu.i
-.PHONY : src/flash_attention_naive.i
-
-# target to preprocess a source file
-src/flash_attention_naive.cu.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/flash_attention_naive_lib.dir/build.make CMakeFiles/flash_attention_naive_lib.dir/src/flash_attention_naive.cu.i
-.PHONY : src/flash_attention_naive.cu.i
-
-src/flash_attention_naive.s: src/flash_attention_naive.cu.s
-.PHONY : src/flash_attention_naive.s
-
-# target to generate assembly for a file
-src/flash_attention_naive.cu.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/flash_attention_naive_lib.dir/build.make CMakeFiles/flash_attention_naive_lib.dir/src/flash_attention_naive.cu.s
-.PHONY : src/flash_attention_naive.cu.s
+flash_attention_cutlass_demo/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/flash_attention_cutlass_demo.dir/build.make CMakeFiles/flash_attention_cutlass_demo.dir/build
+.PHONY : flash_attention_cutlass_demo/fast
 
 src/main.o: src/main.cu.o
 .PHONY : src/main.o
 
 # target to build an object file
 src/main.cu.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/flash_attention_demo.dir/build.make CMakeFiles/flash_attention_demo.dir/src/main.cu.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/flash_attention_cutlass_demo.dir/build.make CMakeFiles/flash_attention_cutlass_demo.dir/src/main.cu.o
 .PHONY : src/main.cu.o
 
 src/main.i: src/main.cu.i
@@ -179,7 +142,7 @@ src/main.i: src/main.cu.i
 
 # target to preprocess a source file
 src/main.cu.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/flash_attention_demo.dir/build.make CMakeFiles/flash_attention_demo.dir/src/main.cu.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/flash_attention_cutlass_demo.dir/build.make CMakeFiles/flash_attention_cutlass_demo.dir/src/main.cu.i
 .PHONY : src/main.cu.i
 
 src/main.s: src/main.cu.s
@@ -187,7 +150,7 @@ src/main.s: src/main.cu.s
 
 # target to generate assembly for a file
 src/main.cu.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/flash_attention_demo.dir/build.make CMakeFiles/flash_attention_demo.dir/src/main.cu.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/flash_attention_cutlass_demo.dir/build.make CMakeFiles/flash_attention_cutlass_demo.dir/src/main.cu.s
 .PHONY : src/main.cu.s
 
 # Help Target
@@ -198,11 +161,7 @@ help:
 	@echo "... depend"
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
-	@echo "... flash_attention_demo"
-	@echo "... flash_attention_naive_lib"
-	@echo "... src/flash_attention_naive.o"
-	@echo "... src/flash_attention_naive.i"
-	@echo "... src/flash_attention_naive.s"
+	@echo "... flash_attention_cutlass_demo"
 	@echo "... src/main.o"
 	@echo "... src/main.i"
 	@echo "... src/main.s"

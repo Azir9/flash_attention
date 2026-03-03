@@ -1,1 +1,0 @@
- libflash_attention_naive_lib.a -lcudadevrt -lcudart_static -lrt -lpthread -ldl 

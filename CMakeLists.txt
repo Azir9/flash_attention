@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.18)
 
-project(flash_attention_naive LANGUAGES CXX CUDA)
+project(flash_attention_cutlass_demo LANGUAGES CXX CUDA)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -18,28 +18,46 @@ set(CMAKE_CUDA_STANDARD_REQUIRED ON)
 # 允许设置 GPU 架构，例如:
 #   cmake -S . -B build -DCMAKE_CUDA_ARCHITECTURES=80
 if(NOT CMAKE_CUDA_ARCHITECTURES)
-    # 你可以根据自己的 GPU 改成 75, 80, 86 等
-    set(CMAKE_CUDA_ARCHITECTURES 70)
+    # CUTLASS cp.async / ldmatrix 常见目标架构
+    set(CMAKE_CUDA_ARCHITECTURES 80)
 endif()
 
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
-
-add_library(flash_attention_naive_lib
-    src/flash_attention_naive.cu
+# 查找 CUTLASS 头文件路径（支持 -DCUTLASS_DIR=... 或环境变量 CUTLASS_DIR）
+set(_CUTLASS_HINTS
+    "${CUTLASS_DIR}"
+    "$ENV{CUTLASS_DIR}"
+    "${CMAKE_CURRENT_SOURCE_DIR}/third_party/cutlass/include"
+    "$ENV{HOME}/cutlass/include"
+    "$ENV{HOME}/cutlass/build/include"
+    "$ENV{HOME}/koopman_mpc/test_code/tvm/3rdparty/cutlass/include"
+    "/usr/local/include"
+    "/usr/include"
 )
 
-set_target_properties(flash_attention_naive_lib PROPERTIES
-    CUDA_SEPARABLE_COMPILATION ON
-    POSITION_INDEPENDENT_CODE ON
+find_path(CUTLASS_INCLUDE_DIR
+    NAMES cutlass/cutlass.h
+    HINTS ${_CUTLASS_HINTS}
 )
 
-add_executable(flash_attention_demo
+if(NOT CUTLASS_INCLUDE_DIR)
+    message(FATAL_ERROR
+        "未找到 CUTLASS 头文件。请设置 -DCUTLASS_DIR=/path/to/cutlass/include")
+endif()
+
+add_executable(flash_attention_cutlass_demo
     src/main.cu
 )
 
-target_link_libraries(flash_attention_demo
-    PRIVATE flash_attention_naive_lib
+target_include_directories(flash_attention_cutlass_demo PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
+    ${CUTLASS_INCLUDE_DIR}
 )
 
+set_target_properties(flash_attention_cutlass_demo PROPERTIES
+    CUDA_SEPARABLE_COMPILATION ON
+    CUDA_ARCHITECTURES "${CMAKE_CUDA_ARCHITECTURES}"
+)
 
-
+target_compile_options(flash_attention_cutlass_demo PRIVATE
+    $<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr --extended-lambda>
+)

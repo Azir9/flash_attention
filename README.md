@@ -1,6 +1,6 @@
 # Flash Attention 实现
 
-用于学习目的的 **Flash Attention** CUDA 实现，包含朴素版本与基于 CUTLASS 的 load/store 优化版本。
+用于学习目的的 **Flash Attention** CUDA 实现，包含朴素版本与基于 CUTLASS 的 load/store 路径，以及已接入的 GEMM 优化计算路径。
 
 ---
 
@@ -10,12 +10,12 @@
 flash_attention/
 ├── include/           # 头文件
 │   ├── common.h       # 常量、TileLayout、TensorLDSTConfig
-│   ├── forward_kernel.cuh   # Kernel 参数、地址计算、forward 入口
+│   ├── forward_kernel.cuh   # Kernel 参数、地址计算、forward 入口（QK + online softmax + PV）
 │   ├── load_store.cuh       # GMEM↔SMEM↔RF 搬运（CUTLASS/CUTE）
 │   ├── online_softmax.cuh   # Online Softmax（scale_S_accum、calc_row_max 等）
 │   ├── tensor.cuh     # MatrixLDST、RFMatrix 抽象
 │   ├── flash_attention.cuh  # 外部调用接口
-│   └── gemm.cuh       # 矩阵乘 / 点积辅助
+│   └── gemm.cuh       # GEMM 路径：QK 点积优化 + PV FMA 累加 + TensorCore 结构占位
 ├── src/
 │   ├── main.cu        # Demo 入口
 │   └── flash_attention_naive.cu  # Naive 版 Kernel 实现
@@ -39,6 +39,10 @@ flash_attention/
 
 - 分块遍历 K/V，使用 **Online Softmax** 动态更新 m、l
 - 支持 `scale_S_accum`、`calc_row_max`、`scale_l_O`、`exponentiate_tensor`、`update_row_exp_sum`、`final_softmax_normalization` 等函数
+- 已将 `gemm.cuh` 接入 forward 计算路径：
+  - `qk_dot_f32_accum`：QK 点积（FMA 展开）
+  - `pv_fma_accum`：PV 累加（FMA 展开）
+  - 保留 `warp_fragment_mma_f32_accum` 的 TensorCore 结构接口，便于后续替换为真实 `mma` 指令
 
 ---
 
@@ -61,7 +65,7 @@ cmake --build .
 ### 运行 Demo
 
 ```bash
-./flash_attention_demo
+./flash_attention_cutlass_demo
 ```
 
 程序会打印输出张量前若干元素，用于验证逻辑正确性。

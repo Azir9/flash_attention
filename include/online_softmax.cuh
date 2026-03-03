@@ -1,68 +1,117 @@
-// Online / stable softmax 的朴素实现（仅用于说明思路）
-
 #pragma once
 
-#include <math.h>
+#include <cuda_runtime.h>
+#include <cmath>
 
-// 这里给出两种形式:
-// 1. 行内一次性稳定 softmax（需要一次性拿到整行 logits）
-// 2. 线上 (online) softmax 更新步骤，用于分块累积时维护 m, l
+namespace fa_warp {
 
-namespace fa_naive {
+// 所有线程参与 warp shuffle 的掩码
+#define SHFL_ENTIRE_WARP_MASK 0xffffffff
 
-// ---------- 1. 单行稳定 softmax ----------
-
-// 输入 logits[0..len-1]，输出 probs[0..len-1]
-// 算法:
-//   m = max_j logits[j]
-//   exps[j] = exp(logits[j] - m)
-//   l = sum_j exps[j]
-//   probs[j] = exps[j] / l
-inline __device__ void stable_softmax_row(const float* __restrict__ logits,
-                                          float* __restrict__ probs,
-                                          int len) {
-    // 求最大值
-    float m = -FLT_MAX;
-    for (int j = 0; j < len; ++j) {
-        m = logits[j] > m ? logits[j] : m;
-    }
-
-    // 计算 exp 并累加
-    float l = 0.f;
-    for (int j = 0; j < len; ++j) {
-        float e = expf(logits[j] - m);
-        probs[j] = e;
-        l += e;
-    }
-
-    // 归一化
-    float inv_l = 1.f / (l + 1e-6f);
-    for (int j = 0; j < len; ++j) {
-        probs[j] *= inv_l;
+template <int QO_fragments, int KV_accum_fragments, typename accum_t = float>
+__forceinline__ __device__ constexpr void scale_S_accum(
+    accum_t (&S_accum)[QO_fragments][KV_accum_fragments],
+    const accum_t &softmax_scale) {
+    #pragma unroll
+    for (int q = 0; q < QO_fragments; ++q) {
+        #pragma unroll
+        for (int k = 0; k < KV_accum_fragments; ++k) {
+            S_accum[q][k] *= softmax_scale;
+        }
     }
 }
 
-// ---------- 2. Online softmax building blocks ----------
-//
-// 假设我们按块遍历 logits:
-//   第一次块得到局部的 max 和 sum_exp，记为 (m_1, l_1)
-//   第二次块得到 (m_2, l_2) ...
-// 通过下面两个函数，可以把各块合并成整体的 (m, l)。
+// 你的原始版本默认做 warp 归约。这里增加 enable_warp_reduce 开关：
+// - true: 适配同一行分布在多个线程（博客中的 warp 协作形式）
+// - false: 适配一线程一行（当前 demo 形式）
+template <bool enable_warp_reduce = true, int QO_fragments, int KV_accum_fragments,
+          typename accum_t = float>
+__forceinline__ __device__ constexpr void calc_row_max(
+    accum_t (&S_accum)[QO_fragments][KV_accum_fragments],
+    accum_t (&m_next)[QO_fragments],
+    accum_t (&m_cur)[QO_fragments]) {
+    #pragma unroll
+    for (int q = 0; q < QO_fragments; ++q) {
+        m_next[q] = m_cur[q];
 
-// 合并一块的最大值:
-//   m_new = max(m_prev, block_max)
-inline __device__ void online_max_update(float& m_prev, float block_max) {
-    m_prev = block_max > m_prev ? block_max : m_prev;
+        #pragma unroll
+        for (int k = 0; k < KV_accum_fragments; ++k) {
+            m_next[q] = max(m_next[q], S_accum[q][k]);
+        }
+
+        if constexpr (enable_warp_reduce) {
+            m_next[q] = max(__shfl_xor_sync(SHFL_ENTIRE_WARP_MASK, m_next[q], 2), m_next[q]);
+            m_next[q] = max(__shfl_xor_sync(SHFL_ENTIRE_WARP_MASK, m_next[q], 1), m_next[q]);
+        }
+    }
 }
 
-// 在已知整体最大值 m 的前提下，更新整体的 softmax 分母:
-//   l_new = l_prev * exp(m_prev - m_new) + block_sum * exp(block_max - m_new)
-inline __device__ void online_l_update(float& l_prev, float m_prev,
-                                       float block_sum, float block_max,
-                                       float m_new) {
-    float scale_prev = expf(m_prev - m_new);
-    float scale_blk = expf(block_max - m_new);
-    l_prev = l_prev * scale_prev + block_sum * scale_blk;
+template <int QO_fragments, int d_head_accum_fragments, typename accum_t = float>
+__forceinline__ __device__ constexpr void scale_l_O(
+    accum_t (&m_next)[QO_fragments],
+    accum_t (&m_cur)[QO_fragments],
+    accum_t (&l)[QO_fragments],
+    accum_t (&O_accum)[QO_fragments][d_head_accum_fragments]) {
+    #pragma unroll
+    for (int q = 0; q < QO_fragments; ++q) {
+        const accum_t scale = expf(m_cur[q] - m_next[q]);
+        m_cur[q] = m_next[q];
+        l[q] *= scale;
+        for (int d_head = 0; d_head < d_head_accum_fragments; ++d_head) {
+            O_accum[q][d_head] *= scale;
+        }
+    }
 }
 
-} // namespace fa_naive
+template <int QO_fragments, int KV_accum_fragments, typename accum_t = float>
+__forceinline__ __device__ constexpr void exponentiate_tensor(
+    accum_t (&S_accum)[QO_fragments][KV_accum_fragments],
+    accum_t (&m)[QO_fragments]) {
+    #pragma unroll
+    for (int q = 0; q < QO_fragments; ++q) {
+        #pragma unroll
+        for (int k = 0; k < KV_accum_fragments; ++k) {
+            S_accum[q][k] = expf(S_accum[q][k] - m[q]);
+        }
+    }
+}
+
+template <int QO_fragments, int d_head_accum_fragments, typename accum_t = float>
+__forceinline__ __device__ constexpr void update_row_exp_sum(
+    accum_t (&P_accum)[QO_fragments][d_head_accum_fragments],
+    accum_t (&l)[QO_fragments]) {
+    #pragma unroll
+    for (int q = 0; q < QO_fragments; ++q) {
+        #pragma unroll
+        for (int d_head = 0; d_head < d_head_accum_fragments; ++d_head) {
+            l[q] += P_accum[q][d_head];
+        }
+    }
+}
+
+template <bool enable_warp_reduce = true, int QO_fragments, int d_head_accum_fragments,
+          typename accum_t = float>
+__forceinline__ __device__ constexpr void final_softmax_normalization(
+    accum_t (&O_accum)[QO_fragments][d_head_accum_fragments],
+    accum_t (&l)[QO_fragments]) {
+    // 行和归约（必要时）
+    #pragma unroll
+    for (int q = 0; q < QO_fragments; ++q) {
+        if constexpr (enable_warp_reduce) {
+            l[q] += __shfl_xor_sync(SHFL_ENTIRE_WARP_MASK, l[q], 2);
+            l[q] += __shfl_xor_sync(SHFL_ENTIRE_WARP_MASK, l[q], 1);
+        }
+    }
+
+    // 最终归一化
+    #pragma unroll
+    for (int q = 0; q < QO_fragments; ++q) {
+        const accum_t inv_l = l[q] > 0 ? (accum_t(1) / l[q]) : accum_t(0);
+        #pragma unroll
+        for (int d_head = 0; d_head < d_head_accum_fragments; ++d_head) {
+            O_accum[q][d_head] *= inv_l;
+        }
+    }
+}
+
+} // namespace fa_warp
